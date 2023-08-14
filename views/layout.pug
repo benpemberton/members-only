@@ -1,7 +1,18 @@
 doctype html
 html
   head
-    title= title
-    link(rel='stylesheet', href='/stylesheets/style.css')
+    title Members only | #{title}
+    link(rel='stylesheet', href='/stylesheets/main.css')
   body
-    block content
+      nav.nav
+        div.nav__title
+          a(href="/") Members only
+        div.nav__links
+          ul
+            li
+              a(href='/signup') Sign up
+            li
+              a(href='/login') Log in
+
+      main.main
+        block content

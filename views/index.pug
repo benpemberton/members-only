@@ -1,5 +1,19 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  div.page-info
+
+  div.list-container 
+    if messages_list
+      each family in family_list
+        div.list-entry
+          a(href=family.url) 
+            div.list-entry__inner
+              div.list-entry__image
+                img(src=family.image)
+              div.list-entry__details
+                p.list-entry__name #{family.name}
+                p.list-entry__num-items Instruments: #{family.instruments}
+
+    else 
+      h4 No messages posted

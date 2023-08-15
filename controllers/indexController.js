@@ -6,10 +6,11 @@ const { body, validationResult } = require("express-validator");
 const User = require("../models/user");
 
 passport.use(
-  new LocalStrategy(async (username, password, done) => {
+  new LocalStrategy({passReqToCallback: true }, async (req, username, password, done) => {
     try {
       const user = await User.findOne({ username: username });
       if (!user) {
+        req.session.messages = [];
         return done(null, false, { message: "Incorrect username" });
       }
       bcrypt.compare(password, user.password, (err, res) => {
@@ -18,6 +19,7 @@ passport.use(
           return done(null, user);
         } else {
           // passwords do not match!
+          req.session.messages = [];
           return done(null, false, { message: "Incorrect password" });
         }
       });
@@ -41,7 +43,7 @@ passport.deserializeUser(async function (id, done) {
 });
 
 // Display detail page for a specific Family.
-exports.messages_list = asyncHandler(async (req, res, next) => {
+exports.home_page = asyncHandler(async (req, res, next) => {
   // // Get details of family and all their instruments (in parallel)
   // const [family, instrumentsInFamily] = await Promise.all([
   //   Family.findById(req.params.id).exec(),
@@ -63,7 +65,8 @@ exports.messages_list = asyncHandler(async (req, res, next) => {
   // );
 
   res.render("index", {
-    title: "Messages",
+    title: "Home",
+    user: req.user
   });
 });
 
@@ -140,3 +143,20 @@ exports.signup_post = [
     }
   }),
 ];
+
+// Display log in form on GET.
+exports.login_get = (req, res, next) => {
+  res.render("login_form", {
+    title: "Log in",
+    messages: req.session.messages
+  });
+};
+
+// Handle log in form on POST.
+exports.login_post = 
+  passport.authenticate("local", {
+    successRedirect: "/",
+    failureRedirect: "/login",
+    failureMessage: true,
+  })
+

@@ -1,0 +1,20 @@
+extends layout
+
+block content
+  h1=title
+
+  form(method='POST' action='')
+    div.form-group
+      label(for='username') Username:
+      input#email.form-control(type='email' placeholder='Enter your email address' name='username' required='true' value=(undefined===user ? '' : user.email) )
+      label(for='password') Password:
+      input#password.form-control(type='password' placeholder='Enter a password' name='password' required='true' minlength="8" maxlength="100" value='')
+
+    button.btn.btn-primary(type='submit') Log in
+
+  if messages  
+    p #{messages}
+  if errors
+    ul
+      for error in errors
+        li!= error.msg

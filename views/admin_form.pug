@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  h1=title
+
+  if user.admin
+   p You're already an admin!
+
+  else
+    h3 Enter the secret password to become an admin
+
+    form(method='POST' action='')
+      div.form-group
+        label(for='password') Password:
+        input#password.form-control(type='password' placeholder='Enter password here' name='password' required='true' value='')
+
+      button.btn.btn-primary(type='submit') Submit
+
+    if errors
+      ul
+        for error in errors
+          li!= error

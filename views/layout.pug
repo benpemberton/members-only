@@ -7,12 +7,27 @@ html
       nav.nav
         div.nav__title
           a(href="/") Members only
+
         div.nav__links
           ul
-            li
-              a(href='/signup') Sign up
-            li
-              a(href='/login') Log in
+            if (!user) 
+              li
+                a(href='/signup') Sign up
+              li
+                a(href='/login') Log in
+
+            if (user)
+              if (user.status == 'Basic') 
+                li
+                  a(href='/member') Become a member
+              
+              if (user.status == 'Member' && !user.admin) 
+                li
+                  a(href='/admin') Become an admin
+
+              li
+                a(href='/logout') Log out
+            
 
       main.main
         block content

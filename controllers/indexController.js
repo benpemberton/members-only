@@ -160,3 +160,58 @@ exports.login_post =
     failureMessage: true,
   })
 
+  // Display member form on GET.
+exports.member_get = (req, res, next) => {
+  if (!req.user) res.redirect('/login')
+
+  res.render("member_form", {
+    title: "Member check",
+    user: req.user
+  });
+};
+
+// Handle member form on POST.
+exports.member_post = asyncHandler(async (req, res, next) => {
+  console.log(req.body.password + '-----' + req.user)
+
+  if (req.body.password == process.env.MEMBER_PASSWORD) {
+    const user = await User.findById(req.user._id);
+    user.status = 'Member';
+    await user.save();
+    res.redirect('/');
+  } else {
+    res.render("member_form", {
+      title: "Member check",
+      user: req.user,
+      errors: [`That password wasn't correct`]
+    });
+    return;
+  }
+});
+
+  // Display admin form on GET.
+  exports.admin_get = (req, res, next) => {
+    if (!req.user) res.redirect('/login')
+  
+    res.render("admin_form", {
+      title: "admin check",
+      user: req.user
+    });
+  };
+  
+  // Handle admin form on POST.
+  exports.admin_post = asyncHandler(async (req, res, next) => {
+    if (req.body.password == process.env.ADMIN_PASSWORD) {
+      const user = await User.findById(req.user._id);
+      user.admin = true;
+      await user.save();
+      res.redirect('/');
+    } else {
+      res.render("admin_form", {
+        title: "Admin check",
+        user: req.user,
+        errors: [`That password wasn't correct`]
+      });
+      return;
+    }
+  });

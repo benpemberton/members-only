@@ -17,4 +17,16 @@ router.get("/login", index_controller.login_get);
 /* POST log in page. */
 router.post("/login", index_controller.login_post);
 
+/* GET member page. */
+router.get("/member", index_controller.member_get);
+
+/* POST member page. */
+router.post("/member", index_controller.member_post);
+
+/* GET admin page. */
+router.get("/admin", index_controller.admin_get);
+
+/* POST admin page. */
+router.post("/admin", index_controller.admin_post);
+
 module.exports = router;

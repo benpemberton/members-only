@@ -15,8 +15,12 @@ const UserSchema = new Schema({
   status: {
     type: String,
     required: true,
-    enum: ["Basic", "Admin"],
+    enum: ["Basic", "Member"],
     default: "Basic",
+  },
+  admin: {
+    type: Boolean,
+    default: false,
   },
 });
 

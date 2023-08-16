@@ -4,6 +4,8 @@ const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
 const { body, validationResult } = require("express-validator");
 const User = require("../models/user");
+const Message = require("../models/message");
+
 
 passport.use(
   new LocalStrategy({passReqToCallback: true }, async (req, username, password, done) => {
@@ -44,29 +46,15 @@ passport.deserializeUser(async function (id, done) {
 
 // Display detail page for a specific Family.
 exports.home_page = asyncHandler(async (req, res, next) => {
-  // // Get details of family and all their instruments (in parallel)
-  // const [family, instrumentsInFamily] = await Promise.all([
-  //   Family.findById(req.params.id).exec(),
-  //   Instrument.find({ family: req.params.id }).populate("family").exec(),
-  // ]);
+  // // Get array of all messages 
+  const messages = await Message.find().populate('author').exec();
 
-  // if (family === null) {
-  //   // No results.
-  //   const err = new Error("Family not found");
-  //   err.status = 404;
-  //   return next(err);
-  // }
-
-  // // get URL values from Mongoose doc and count children for each object
-  // let newArray = await getChildrenAndUrls(
-  //   instrumentsInFamily,
-  //   Product,
-  //   "instrument"
-  // );
+  console.log(messages)
 
   res.render("index", {
     title: "Home",
-    user: req.user
+    user: req.user,
+    messages: messages
   });
 });
 

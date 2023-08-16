@@ -6,16 +6,15 @@ block content
     p #{user.username}
 
   div.list-container 
-    if messages_list
-      each family in family_list
+    if messages
+      each message in messages
         div.list-entry
-          a(href=family.url) 
-            div.list-entry__inner
-              div.list-entry__image
-                img(src=family.image)
-              div.list-entry__details
-                p.list-entry__name #{family.name}
-                p.list-entry__num-items Instruments: #{family.instruments}
+          p.list-entry__title #{message.title}
+          p.list-entry__message #{message.text}
+          div.list-entry__meta
+            if (user)
+              p.list-entry__author #{message.author.first_name} #{message.author.last_name}
+              p.list-entry__date #{message.createdAt}
 
     else 
       h4 No messages posted

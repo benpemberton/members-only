@@ -29,4 +29,7 @@ router.get("/admin", index_controller.admin_get);
 /* POST admin page. */
 router.post("/admin", index_controller.admin_post);
 
+/* POST add message form. */
+router.post("/add-message", index_controller.add_message_post);
+
 module.exports = router;

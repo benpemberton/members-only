@@ -5,6 +5,15 @@ block content
   if user
     p #{user.username}
 
+    form(method='POST' action='/add-message')
+      div.form-group
+        label(for='title') Title:
+        input#title.form-control(type='text' placeholder='Title' name='title' required='true' minlength="1" maxlength="200" value=(undefined===currentPost ? '' : currentMessage.title) )
+        label(for='last_name') Message:
+        textarea#message.form-control(placeholder='Message' name='message' required='true' minlength="3" maxlength="400" value=(undefined===currentPost ? '' : currentMessage.message) )
+
+      button.btn.btn-primary(type='submit') Submit
+
   div.list-container 
     if messages
       each message in messages
@@ -14,7 +23,7 @@ block content
           div.list-entry__meta
             if (user)
               p.list-entry__author #{message.author.first_name} #{message.author.last_name}
-              p.list-entry__date #{message.createdAt}
+              p.list-entry__date #{message.created_date_formatted}
 
     else 
       h4 No messages posted

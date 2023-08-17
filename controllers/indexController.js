@@ -6,29 +6,31 @@ const { body, validationResult } = require("express-validator");
 const User = require("../models/user");
 const Message = require("../models/message");
 
-
 passport.use(
-  new LocalStrategy({passReqToCallback: true }, async (req, username, password, done) => {
-    try {
-      const user = await User.findOne({ username: username });
-      if (!user) {
-        req.session.messages = [];
-        return done(null, false, { message: "Incorrect username" });
-      }
-      bcrypt.compare(password, user.password, (err, res) => {
-        if (res) {
-          // passwords match! log user in
-          return done(null, user);
-        } else {
-          // passwords do not match!
+  new LocalStrategy(
+    { passReqToCallback: true },
+    async (req, username, password, done) => {
+      try {
+        const user = await User.findOne({ username: username });
+        if (!user) {
           req.session.messages = [];
-          return done(null, false, { message: "Incorrect password" });
+          return done(null, false, { message: "Incorrect username" });
         }
-      });
-    } catch (err) {
-      return done(err);
+        bcrypt.compare(password, user.password, (err, res) => {
+          if (res) {
+            // passwords match! log user in
+            return done(null, user);
+          } else {
+            // passwords do not match!
+            req.session.messages = [];
+            return done(null, false, { message: "Incorrect password" });
+          }
+        });
+      } catch (err) {
+        return done(err);
+      }
     }
-  })
+  )
 );
 
 passport.serializeUser(function (user, done) {
@@ -46,15 +48,15 @@ passport.deserializeUser(async function (id, done) {
 
 // Display detail page for a specific Family.
 exports.home_page = asyncHandler(async (req, res, next) => {
-  // // Get array of all messages 
-  const messages = await Message.find().populate('author').exec();
+  // // Get array of all messages
+  const messages = await Message.find().populate("author").exec();
 
-  console.log(messages)
+  console.log(messages);
 
   res.render("index", {
     title: "Home",
     user: req.user,
-    messages: messages
+    messages: messages,
   });
 });
 
@@ -136,70 +138,112 @@ exports.signup_post = [
 exports.login_get = (req, res, next) => {
   res.render("login_form", {
     title: "Log in",
-    messages: req.session.messages
+    messages: req.session.messages,
   });
 };
 
 // Handle log in form on POST.
-exports.login_post = 
-  passport.authenticate("local", {
-    successRedirect: "/",
-    failureRedirect: "/login",
-    failureMessage: true,
-  })
+exports.login_post = passport.authenticate("local", {
+  successRedirect: "/",
+  failureRedirect: "/login",
+  failureMessage: true,
+});
 
-  // Display member form on GET.
+// Display member form on GET.
 exports.member_get = (req, res, next) => {
-  if (!req.user) res.redirect('/login')
+  if (!req.user) res.redirect("/login");
 
   res.render("member_form", {
     title: "Member check",
-    user: req.user
+    user: req.user,
   });
 };
 
 // Handle member form on POST.
 exports.member_post = asyncHandler(async (req, res, next) => {
-  console.log(req.body.password + '-----' + req.user)
+  console.log(req.body.password + "-----" + req.user);
 
   if (req.body.password == process.env.MEMBER_PASSWORD) {
     const user = await User.findById(req.user._id);
-    user.status = 'Member';
+    user.status = "Member";
     await user.save();
-    res.redirect('/');
+    res.redirect("/");
   } else {
     res.render("member_form", {
       title: "Member check",
       user: req.user,
-      errors: [`That password wasn't correct`]
+      errors: [`That password wasn't correct`],
     });
     return;
   }
 });
 
-  // Display admin form on GET.
-  exports.admin_get = (req, res, next) => {
-    if (!req.user) res.redirect('/login')
-  
+// Display admin form on GET.
+exports.admin_get = (req, res, next) => {
+  if (!req.user) res.redirect("/login");
+
+  res.render("admin_form", {
+    title: "admin check",
+    user: req.user,
+  });
+};
+
+// Handle admin form on POST.
+exports.admin_post = asyncHandler(async (req, res, next) => {
+  if (req.body.password == process.env.ADMIN_PASSWORD) {
+    const user = await User.findById(req.user._id);
+    user.admin = true;
+    await user.save();
+    res.redirect("/");
+  } else {
     res.render("admin_form", {
-      title: "admin check",
-      user: req.user
+      title: "Admin check",
+      user: req.user,
+      errors: [`That password wasn't correct`],
     });
-  };
-  
-  // Handle admin form on POST.
-  exports.admin_post = asyncHandler(async (req, res, next) => {
-    if (req.body.password == process.env.ADMIN_PASSWORD) {
-      const user = await User.findById(req.user._id);
-      user.admin = true;
-      await user.save();
-      res.redirect('/');
-    } else {
-      res.render("admin_form", {
-        title: "Admin check",
-        user: req.user,
-        errors: [`That password wasn't correct`]
+    return;
+  }
+});
+
+// Handle add message form on POST.
+exports.add_message_post = [
+  // Validate and sanitize fields.
+  body("title", "Title must be between 1 and 200 characters.")
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .escape(),
+  body("message", "Message must be between 3 and 400 characters.")
+    .trim()
+    .isLength({ min: 3, max: 100 })
+    .escape(),
+
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create User object with escaped and trimmed data
+    const message = new Message({
+      title: req.body.title,
+      text: req.body.message,
+      author: req.user._id,
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render home page with sanitized values/errors messages in message form.
+      res.render("index", {
+        title: "Home",
+        currentMessage: message,
+        errors: errors.array(),
       });
       return;
+    } else {
+      // Data from form is valid.
+      // Add message to db
+      await message.save();
+
+      // Reload homepage with new message.
+      res.redirect("/");
     }
-  });
+  }),
+];

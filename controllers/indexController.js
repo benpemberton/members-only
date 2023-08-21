@@ -72,13 +72,10 @@ exports.add_message_post = [
   // Validate and sanitize fields.
   body("title", "Title must be between 1 and 200 characters.")
     .trim()
-    .isLength({ min: 1, max: 100 })
-    .escape(),
+    .isLength({ min: 1, max: 100 }),
   body("message", "Message must be between 3 and 400 characters.")
     .trim()
-    .isLength({ min: 3, max: 100 })
-    .escape(),
-
+    .isLength({ min: 3, max: 100 }),
   // Process request after validation and sanitization.
   asyncHandler(async (req, res, next) => {
     // Extract the validation errors from a request.

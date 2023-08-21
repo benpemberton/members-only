@@ -3,7 +3,7 @@ extends layout
 block content
   h1=title
 
-  if user.admin
+  if currentUser.admin
    p You're already an admin!
 
   else

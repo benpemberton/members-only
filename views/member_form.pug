@@ -3,7 +3,7 @@ extends layout
 block content
   h1=title
 
-  if user.status == 'Member'
+  if currentUser.status == 'Member'
    p You're already a member of the club!
 
   else

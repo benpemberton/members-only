@@ -7,11 +7,16 @@ const compression = require("compression");
 require("dotenv").config();
 const session = require("express-session");
 const passport = require("passport");
-
+const LocalStrategy = require("passport-local").Strategy;
+const bcrypt = require("bcryptjs");
+const User = require("./models/user");
 const indexRouter = require("./routes/index");
-const usersRouter = require("./routes/users");
-
+const authRouter = require("./routes/auth");
 const app = express();
+
+/*  */
+/* MONGOOSE CONFIG */
+/*  */
 
 // Import the mongoose module
 const mongoose = require("mongoose");
@@ -30,9 +35,9 @@ async function main() {
   await mongoose.connect(mongoDB);
 }
 
-// view engine setup
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "pug");
+/*  */
+/* SESSION CONFIG */
+/*  */
 
 app.use(
   session({
@@ -42,8 +47,60 @@ app.use(
   })
 );
 
+/*  */
+/* PASSPORT CONFIG */
+/*  */
+
+passport.use(
+  new LocalStrategy(
+    { passReqToCallback: true },
+    async (req, username, password, done) => {
+      try {
+        const user = await User.findOne({ username: username });
+        if (!user) {
+          req.session.messages = [];
+          return done(null, false, { message: "Incorrect username" });
+        }
+        bcrypt.compare(password, user.password, (err, res) => {
+          if (res) {
+            // passwords match! log user in
+            return done(null, user);
+          } else {
+            // passwords do not match!
+            req.session.messages = [];
+            return done(null, false, { message: "Incorrect password" });
+          }
+        });
+      } catch (err) {
+        return done(err);
+      }
+    }
+  )
+);
+
+/*  */
+/* APP CONFIG */
+/*  */
+
+// views engine setup
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "pug");
+
 app.use(passport.initialize());
 app.use(passport.session());
+
+passport.serializeUser(function (user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async function (id, done) {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err);
+  }
+});
 
 // make session user available locally
 app.use(function (req, res, next) {
@@ -58,7 +115,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
+app.use("/user", authRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

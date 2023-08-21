@@ -10,24 +10,35 @@ html
 
         div.nav__links
           ul
-            if (!user) 
+            if (!currentUser) 
               li
-                a(href='/signup') Sign up
+                a(href='/user/signup') Sign up
               li
-                a(href='/login') Log in
+                a(href='/user/login') Log in
 
-            if (user)
-              if (user.status == 'Basic') 
+            if (currentUser)
+              if (currentUser.status == 'Basic') 
                 li
                   a(href='/member') Become a member
               
-              if (user.status == 'Member' && !user.admin) 
+              if (currentUser.status == 'Member' && !currentUser.admin) 
                 li
                   a(href='/admin') Become an admin
 
               li
-                a(href='/logout') Log out
-            
+                a(href='/user/logout') Log out
+        
+        if (currentUser)
+          div.logged-in-user
+            p.logged-in-user__email #{currentUser.username}
+            if currentUser.status == 'Basic'
+              p.logged-in-user__status Basic
+            else if currentUser.admin
+              p.logged-in-user__status Member (admin)
+            else
+              p.logged-in-user__status Member
+             
+                       
 
       main.main
         block content

@@ -5,18 +5,6 @@ const index_controller = require("../controllers/indexController");
 /* GET home page. */
 router.get("/", index_controller.home_page);
 
-/* GET sign up page. */
-router.get("/signup", index_controller.signup_get);
-
-/* Post sign up page. */
-router.post("/signup", index_controller.signup_post);
-
-/* GET log in page. */
-router.get("/login", index_controller.login_get);
-
-/* POST log in page. */
-router.post("/login", index_controller.login_post);
-
 /* GET member page. */
 router.get("/member", index_controller.member_get);
 
@@ -31,5 +19,11 @@ router.post("/admin", index_controller.admin_post);
 
 /* POST add message form. */
 router.post("/add-message", index_controller.add_message_post);
+
+// GET request to delete message.
+router.get("/:id/delete", index_controller.delete_message_get);
+
+// POST request to delete message.
+router.post("/:id/delete", index_controller.delete_message_post);
 
 module.exports = router;

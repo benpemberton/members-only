@@ -1,0 +1,26 @@
+extends layout
+
+block content
+  div.page-info
+    h1 #{title}
+
+    div.list-container 
+      div.list-entry
+        div.list-entry__date
+            if (currentUser)
+              p.list-entry__date-text #{message.created_date_formatted}
+        div.list-entry__inner
+          if (currentUser)
+            div.list-entry__side-tab
+              p.list-entry__author #{message.author.first_name} #{message.author.last_name}
+          div.list-entry__message
+            p.list-entry__title #{message.title}
+            p.list-entry__text #{message.text}
+
+    p Do you really want to delete this message?
+
+    form(method='POST' action='')
+      div.form-group
+        input#messageid.form-control(type='hidden', name='messageid', required='true', value=message._id)
+
+      button.btn.btn-primary(type='submit') Delete

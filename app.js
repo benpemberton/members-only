@@ -108,6 +108,7 @@ app.use(function (req, res, next) {
   next();
 });
 
+app.use(compression()); // Compress all routes
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
